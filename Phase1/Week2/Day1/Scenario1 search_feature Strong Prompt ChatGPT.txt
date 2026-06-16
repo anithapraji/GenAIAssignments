@@ -1,0 +1,102 @@
+Search Feature Test Cases – Plumbing eCommerce Platform
+
+Application Type: B2B + B2C Plumbing Parts Marketplace
+Module: Product Search
+Format: Azure DevOps Test Plan Compatible
+
+Test Suite 1 – Basic Search Functionality
+Title	Test Suite / Area Path	Priority	Test Type	Preconditions	Test Steps	Test Data	Expected Result
+Verify exact product search	Search → Basic Search	Mandatory	Functional	Product catalog loaded	1. Open search bar 2. Enter exact keyword 3. Click search	PVC Pipe 2 inch	Matching plumbing products displayed accurately
+Verify partial keyword search	Search → Basic Search	High	Functional	Search enabled	1. Enter partial keyword 2. Trigger search	PVC Pi	Relevant matching products shown
+Verify case insensitive search	Search → Basic Search	High	Functional	Search enabled	1. Search lowercase 2. Search uppercase	pvc PIPE	Same search results returned
+Verify alphanumeric search	Search → Basic Search	High	Functional	Search enabled	Enter product with dimensions	PVC2INCH	Correct product displayed
+Verify search with special characters	Search → Input Validation	High	Edge Case	Search enabled	Search using special chars	PVC@#$	Proper validation or no results
+Verify blank search input	Search → Input Validation	High	Functional	Search bar available	Click search without input	Blank	Validation message displayed
+
+Test Suite 2 – Auto Suggestion & Intelligent Search
+Title	Test Suite	Priority	Test Type	Preconditions	Test Steps	Test Data	Expected Result
+Verify auto suggestion display	Search → Suggestions	Medium	Functional	Autosuggest enabled	Type keyword gradually	Val	Suggestions displayed instantly
+Verify typo tolerance	Search → Intelligent Search	High	Functional	Spell correction enabled	Enter misspelled word	Valvve	Valve products shown
+Verify synonym matching	Search → Intelligent Search	Medium	Functional	Synonym mapping configured	Search alternate word	Tap Connector	Matching fittings shown
+Verify suggestion relevance	Search → Suggestions	Medium	Usability	Suggestions enabled	Type product keyword	Pipe	Most relevant suggestions appear first
+Verify duplicate suggestions are removed	Search → Suggestions	Medium	Functional	Catalog contains duplicates	Trigger suggestions	PVC	No duplicate suggestions displayed
+
+Test Suite 3 – Sorting Validation
+Title	Test Suite	Priority	Test Type	Preconditions	Test Steps	Test Data	Expected Result
+Verify relevance sorting	Search → Sorting	High	Functional	Search results available	Search product	Pipe	Most relevant products shown first
+Verify price low to high sorting	Search → Sorting	High	Functional	Multiple price points exist	Select sort option	Pipe	Results sorted ascending
+Verify price high to low sorting	Search → Sorting	High	Functional	Results available	Select descending sort	Pipe	Products sorted descending
+Verify popularity sorting	Search → Sorting	High	Functional	Product popularity data exists	Select popularity sort	Pipe	Best-selling products displayed first
+
+Test Suite 4 – Filter Validation
+Title	Test Suite	Priority	Test Type	Preconditions	Test Steps	Test Data	Expected Result
+Verify category filter	Search → Filters	High	Functional	Categories configured	Apply category filter	Pipes	Only pipes displayed
+Verify price range filter	Search → Filters	High	Functional	Products available	Apply price filter	₹100–₹500	Results within range shown
+Verify ratings filter	Search → Filters	High	Functional	Product ratings exist	Apply rating filter	4 Star	Only 4+ star products displayed
+Verify multiple filter combination	Search → Filters	High	Functional	Filters enabled	Apply category + price	Pipes + ₹500	Combined filtered results shown
+Verify filter reset	Search → Filters	Medium	Functional	Filters applied	Click reset	Existing filters	Results reset successfully
+
+Test Suite 5 – Pagination Validation
+Title	Test Suite	Priority	Test Type	Preconditions	Test Steps	Test Data	Expected Result
+Verify 10 items pagination	Search → Pagination	High	Functional	Large result set exists	Select 10 items/page	Search Pipe	Exactly 10 items shown
+Verify 20 items pagination	Search → Pagination	High	Functional	Large result set exists	Select 20/page	Pipe	20 items shown
+Verify 50 items pagination	Search → Pagination	High	Functional	Large catalog exists	Select 50/page	Pipe	50 items shown
+Verify next page navigation	Search → Pagination	High	Functional	Multi-page results exist	Click Next	Pipe	Next set loads correctly
+
+Test Suite 6 – Error Handling
+Title	Test Suite	Priority	Test Type	Preconditions	Test Steps	Test Data	Expected Result
+Verify no result scenario	Search → Error Handling	Critical	Functional	Search active	Search unavailable product	XYZRandomPart	No result message displayed
+Verify invalid input handling	Search → Error Handling	High	Edge Case	Search active	Enter invalid string	!!!!%%%%	Graceful error handling
+Verify API failure handling	Search → Backend Errors	Critical	Reliability	API controllable	Simulate API failure	Pipe	Error handled gracefully
+Verify network failure during search	Search → Network Errors	Critical	Reliability	Network simulation enabled	Disconnect internet during search	Pipe	Retry message shown
+Verify timeout handling	Search → Backend Errors	Critical	Reliability	Artificial latency enabled	Trigger delayed API	Pipe	Timeout error displayed
+
+Test Suite 7 – Performance Testing
+Title	Test Suite	Priority	Test Type	Preconditions	Test Steps	Test Data	Expected Result
+Verify response under 2 sec	Search → Performance	Mandatory	Performance	Performance environment	Execute standard search	Pipe	Response <2 seconds
+Verify concurrent users search	Search → Load Testing	Mandatory	Performance	Load tool configured	Simulate concurrent users	1000 users	Stable system behavior
+Verify search under heavy catalog	Search → Performance	High	Performance	Large DB loaded	Search across huge catalog	1M products	Stable response maintained
+Verify cache retrieval speed	Search → Caching	High	Performance	Cache enabled	Repeat search twice	Valve	Faster cached response
+
+Test Suite 8 – Backend Reliability
+Title	Test Suite	Priority	Test Type	Preconditions	Test Steps	Test Data	Expected Result
+Verify DB query execution	Search → Backend	Mandatory	Reliability	DB connected	Trigger search	Pipe	Correct DB retrieval
+Verify API response accuracy	Search → API	Mandatory	Reliability	API active	Call search API	Pipe	Accurate response returned
+Verify cache consistency	Search → Backend	High	Reliability	Cache active	Update product then search	Pipe	Updated data reflected
+Verify search indexing	Search → Backend	High	Reliability	Index service enabled	Search new product	New Valve	Product searchable
+
+Test Suite 9 – Security Testing
+Title	Test Suite	Priority	Test Type	Preconditions	Test Steps	Test Data	Expected Result
+Verify SQL injection prevention	Search → Security	Mandatory	Security	Security testing enabled	Enter malicious query	' OR 1=1	Injection blocked
+Verify XSS attack prevention	Search → Security	Mandatory	Security	Security tools active	Enter script tag	<script>	Script execution blocked
+Verify rate limiting	Search → Security	High	Security	Rate limiter active	Send repeated requests	500 req/sec	Requests throttled
+Verify bot detection	Search → Security	High	Security	Bot protection enabled	Simulate bot traffic	Automated script	Bot blocked
+
+Test Suite 10 – Role Based Validation
+Title	Test Suite	Priority	Test Type	Preconditions	Test Steps	Test Data	Expected Result
+Guest user search	Search → User Roles	High	Functional	Guest access enabled	Search product	Pipe	Search works successfully
+Logged-in user search	Search → User Roles	High	Functional	Login completed	Search product	Valve	Personalized results shown
+Admin search access	Search → User Roles	High	Functional	Admin logged in	Search product	Pipe	Admin permissions respected
+
+Test Suite 11 – Cross Platform Compatibility
+Title	Test Suite	Priority	Test Type	Preconditions	Test Steps	Test Data	Expected Result
+Verify Chrome browser search	Search → Browser Testing	High	Compatibility	Chrome installed	Execute search	Pipe	Search works correctly
+Verify Safari browser search	Search → Browser Testing	High	Compatibility	Safari installed	Execute search	Pipe	Results displayed correctly
+Verify Android search	Search → Mobile	High	Compatibility	Android device available	Search product	Valve	UI responsive
+Verify iOS search	Search → Mobile	High	Compatibility	iPhone available	Search product	Pipe	Search functions correctly
+
+Test Suite 12 – Usability Validation
+Title	Test Suite	Priority	Test Type	Preconditions	Test Steps	Test Data	Expected Result
+Verify search relevance	Search → Usability	Medium	Usability	Search active	Search product	PVC pipe	Highly relevant products displayed
+Verify no duplicate results	Search → Usability	Medium	Functional	Duplicate catalog exists	Search product	Pipe	Duplicate results removed
+Verify UI responsiveness	Search → Usability	Medium	Usability	Search page open	Perform search repeatedly	Pipe	UI remains responsive
+
+Recommended Test Data Sets
+Dataset	Description
+Small Catalog	100 plumbing products
+Medium Catalog	10,000 products
+Large Catalog	1,000,000 products
+Valid Inputs	PVC Pipe, Ball Valve, Copper Fittings
+Invalid Inputs	@@@@, ####, random123xyz
+Typo Data	Valvve, Pype, Fittng
+Concurrent Users	100, 500, 1000, 5000 users

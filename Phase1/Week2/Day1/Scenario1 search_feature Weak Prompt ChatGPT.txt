@@ -1,0 +1,68 @@
+SEARCH FEATURE TEST CASES
+
+1. FUNCTIONAL TEST CASES
+- Exact search → Matching result displayed
+- Partial search → Relevant results displayed
+- Valid keyword search → Correct results shown
+- Multiple keyword search → Combined relevant results displayed
+- Category search → Category items displayed
+- Search with filters → Filtered results shown
+- Search with sorting → Results sorted correctly
+- Autocomplete suggestions → Suggestions appear dynamically
+- Select suggestion → Search executes correctly
+- Search unavailable item → No results found message shown
+
+2. NEGATIVE TEST CASES
+- Blank search → Validation/default behavior triggered
+- Invalid characters (@#$%) → Handled gracefully
+- SQL Injection (' OR 1=1 --) → Input sanitized
+- Script injection (<script>) → XSS prevented
+- Unsupported symbols → Proper handling
+- Extremely long input (500+ chars) → No crash
+- Search deleted item → No result displayed
+
+3. BOUNDARY TEST CASES
+- Minimum characters (1) → Search executes if supported
+- Maximum allowed length → Accepted successfully
+- Exceed max length → Validation shown
+- Leading spaces → Trimmed correctly
+- Trailing spaces → Search works correctly
+- Only spaces → Validation message shown
+- Numeric search → Matching numeric results shown
+
+4. UI/UX TEST CASES
+- Search box visible
+- Placeholder text correct
+- Search button accessible
+- Enter key triggers search
+- Loading spinner displayed
+- Proper no-result screen
+- Search history shown (if applicable)
+- Clear search works correctly
+
+5. PERFORMANCE TEST CASES
+- Response time within SLA
+- Stable under heavy traffic
+- Large database search performance acceptable
+- Concurrent searches supported
+- Rapid repeated searches handled
+- Autocomplete response fast
+
+6. SECURITY TEST CASES
+- SQL Injection blocked
+- XSS attack prevented
+- Unauthorized data hidden
+- Access control enforced
+
+7. COMPATIBILITY TEST CASES
+- Chrome supported
+- Firefox supported
+- Mobile browser responsive
+- Tablet layout correct
+- Slow network handled gracefully
+
+8. ACCESSIBILITY TEST CASES
+- Keyboard navigation supported
+- Screen reader compatibility
+- Proper contrast ratio
+- Focus indicators visible
