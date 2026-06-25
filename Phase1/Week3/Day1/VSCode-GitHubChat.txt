@@ -1,0 +1,899 @@
+User: Analyze the existing codebase that supports Selenium-Java and Playwright-TypeScript for test script generation. Add Selenium-C# support. Review the project and identify all files responsible for code generation, language/browser selection, templates, configurations, and UI logic. Provide a file-by-file breakdown of what needs to be updated, any new files required, reusable code from Selenium-Java, dependencies needed, and a step-by-step implementation plan.
+
+GitHub Copilot: I'll analyze your codebase to understand the current architecture for Selenium-Java and Playwright-TypeScript support, then provide a comprehensive plan for adding Selenium-C#. Let me explore the project systematically.    
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/panel.html#1-1), lines 1 to 100
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src)
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/manifest.json)
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/bg.js)
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/config/appConfig.js)
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts)
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/config/configUtils.js)
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/popup.js#1-1), lines 1 to 200
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/chat.js#1-1), lines 1 to 300
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/init-config.js)
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/chat.js#300-300), lines 300 to 500
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/prompts.js#1-1), lines 1 to 300
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/chat.js#500-500), lines 500 to 700
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/prompts.js#200-200), lines 200 to 300
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/prompts.js#300-300), lines 300 to 459
+
+Searched for regex `export.*getPrompt|function getPrompt` (`**/src/scripts/prompts.js`), 1 result
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/panel.html)
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/lib/prism)
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/tabs.js)
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/api/groq-api.js)
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/api/openai-api.js)
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/api/testleaf-api.js)
+
+Now let me save a comprehensive analysis to memory: 
+
+Created memory file [](file:///c%3A/Users/Dell/AppData/Roaming/Code/User/workspaceStorage/a2976dde9bf7e0d4012faf9d09fb84e1/GitHub.copilot-chat/memory-tool/memories/Mjk2NWRjMzAtZDc4ZS00ZWI4LThiYTUtYWM3NDcxZmU2ODI4/csharp_selenium_analysis.md)
+
+Based on my comprehensive analysis of your codebase, here's a complete breakdown:
+
+## **ARCHITECTURE OVERVIEW**
+
+Your extension uses a **prompt-driven, modular code generation system** where:
+- DOM content is captured via inspector
+- Language/Browser/Mode selections determine which prompts are used
+- LLM APIs generate code using templated prompts
+- Prism highlights the generated code
+
+---
+
+## **FILE-BY-FILE BREAKDOWN**
+
+### **Critical Files for Code Generation:**
+
+#### prompts.js
+**Responsibility**: Template repository for all code generation
+- `DEFAULT_PROMPTS` object: Contains 6 prompt templates
+  - `SELENIUM_JAVA_PAGE_ONLY` - Page object class only
+  - `CUCUMBER_ONLY` - Feature file only
+  - `CUCUMBER_WITH_SELENIUM_JAVA_STEPS` - Combined feature + step definitions
+  - `PLAYWRIGHT_TYPESCRIPT_POM` - Page object model
+  - `PLAYWRIGHT_TYPESCRIPT_SPEC` - Test spec only
+  - `PLAYWRIGHT_TYPESCRIPT_POM_AND_SPEC` - Combined
+- `getPrompt(promptKey, variables)` - Template variable substitution function
+- `CODE_GENERATOR_TYPES` - Enum of all supported generation types
+
+#### chat.js
+**Responsibility**: Main logic orchestrator
+- **Language/Browser selection**: `this.languageBindingSelect` (id="languageBinding"), `this.browserEngineSelect` (id="browserEngine")
+- **Generation mode**: Checkboxes with `name="javaGenerationMode"` (hardcoded name - a refactoring opportunity)
+- **Critical method `getPromptKeys(language, engine)`**:
+  - Routes to correct prompts based on language + engine + generation mode
+  - Helper methods: `isJavaSelenium()`, `isTypeScriptPlaywright()`, `isCSharpSelenium()` (stubbed)
+  - Logic: "Feature only" vs "Page only" vs "Both"
+- **Message handling**: `sendMessage()` calls LLM with populated prompts
+- **Syntax highlighting**: Prism language mapping including `'cs': 'csharp'`
+
+#### panel.html
+**Responsibility**: UI controls
+- **Language dropdown** (id="languageBinding"): java, csharp, py, ts
+- **Browser dropdown** (id="browserEngine"): selenium, playwright, cypress, puppeteer
+- **Generation mode checkboxes** (name="javaGenerationMode"): Feature File, Page Class
+  - ⚠️ **Note**: Checkbox name is hardcoded for Java - works for other languages by accident
+
+#### groq-api.js, openai-api.js, testleaf-api.js
+**Responsibility**: LLM provider wrappers
+- Generic message sending - already support any language
+- No language-specific changes needed
+- Return: `{ content, usage: { input_tokens, output_tokens } }`
+
+#### appConfig.js
+**Responsibility**: Color/styling configuration
+- No language-specific logic needed
+
+#### Other files
+- popup.js - Settings tab logic (language/model selection)
+- tabs.js - Tab switching (minimal changes)
+- bg.js - Background service worker (no changes)
+- prism - Syntax highlighting library
+
+---
+
+## **WHAT NEEDS TO BE UPDATED**
+
+### **1. NEW PROMPTS (in prompts.js)**
+
+Add these C# prompts following the existing pattern:
+
+```javascript
+SELENIUM_CSHARP_PAGE_ONLY: `
+  Instructions:
+  - Generate ONLY a Selenium C# Page Object Class (no test code).
+  - Use NUnit or MSTest framework conventions.
+  - Use C# async/await patterns.
+  - Include XML documentation comments.
+  - Use Selenium 4.x compatible imports.
+  - Use meaningful method names following PascalCase.
+  - Do NOT include test code or explanations.
+  ...
+`
+
+SELENIUM_CSHARP_WITH_NUNIT: `
+  Instructions:
+  - Generate BOTH:
+    1. A Selenium C# Page Object Class.
+    2. An NUnit test class using the POM.
+  - Page Object: Properties and methods for page interactions.
+  - Test Class: [TestFixture], [Test] attributes with realistic scenarios.
+  ...
+`
+```
+
+### **2. LOGIC UPDATES (in chat.js)**
+
+**Implement `isCSharpSelenium()` method** (currently stubbed):
+```javascript
+isCSharpSelenium(language, engine) {
+  return language === 'csharp' && engine === 'selenium';
+}
+```
+
+**Update `getPromptKeys()` method** to handle C#:
+```javascript
+if (isFeatureChecked && isPageChecked) {
+  if (this.isJavaSelenium(lang, eng)) {
+    promptKeys.push('CUCUMBER_WITH_SELENIUM_JAVA_STEPS');
+  } else if (this.isCSharpSelenium(lang, eng)) {
+    promptKeys.push('SELENIUM_CSHARP_WITH_NUNIT');  // NEW
+  } else if (this.isTypeScriptPlaywright(lang, eng)) {
+    promptKeys.push('PLAYWRIGHT_TYPESCRIPT_POM_AND_SPEC');
+  }
+  // ...
+}
+```
+
+### **3. SYNTAX HIGHLIGHTING**
+
+Add Prism C# language support to panel.html:
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/csharp.min.js"></script>
+```
+Or include locally in `/lib/prism/prism-csharp.js`
+
+Update language mapping in chat.js:
+```javascript
+const languageMap = {
+  'feature': 'gherkin',
+  'cucumber': 'gherkin',
+  'bdd': 'gherkin',
+  'js': 'javascript',
+  'ts': 'typescript',
+  'py': 'python',
+  'cs': 'csharp',
+  'csharp': 'csharp'  // ADD THIS
+};
+```
+
+### **4. OPTIONAL: UI IMPROVEMENTS**
+
+Rename hardcoded checkbox names in panel.html:
+```html
+<!-- BEFORE -->
+<input type="checkbox" name="javaGenerationMode" value="FEATURE" />
+
+<!-- AFTER -->
+<input type="checkbox" name="generationMode" value="FEATURE" />
+```
+
+Then update selector in chat.js:
+```javascript
+// BEFORE
+const checkboxes = Array.from(document.querySelectorAll('input[name="javaGenerationMode"]:checked'));
+
+// AFTER
+const checkboxes = Array.from(document.querySelectorAll('input[name="generationMode"]:checked'));
+```
+
+### **5. UPDATE CODE_GENERATOR_TYPES ENUM**
+
+In prompts.js:
+```javascript
+export const CODE_GENERATOR_TYPES = {
+  SELENIUM_JAVA_PAGE_ONLY: 'Selenium-Java-Page-Only',
+  SELENIUM_CSHARP_PAGE_ONLY: 'Selenium-CSharp-Page-Only',      // NEW
+  SELENIUM_CSHARP_WITH_NUNIT: 'Selenium-CSharp-With-NUnit',     // NEW
+  CUCUMBER_ONLY: 'Cucumber-Only',
+  // ... rest unchanged
+};
+```
+
+---
+
+## **REUSABLE CODE FROM SELENIUM-JAVA**
+
+| Component | Reusable Aspect | Adaptation for C# |
+|-----------|-----------------|-------------------|
+| **Prompt Structure** | ICE POT format, DOM template | Replace Java syntax with C# syntax |
+| **DOM Processing** | stripExtraOptions, DOMParser | No changes - DOM processing is language-agnostic |
+| **Generation Mode Logic** | "Feature + Page" routing | Reuse, just add C#-specific prompt key |
+| **Message Flow** | UI → LLM → Parse → Display | 100% reusable, language-agnostic |
+| **API Wrappers** | Groq/OpenAI/Testleaf clients | 100% reusable - they're provider-agnostic |
+| **Storage** | Chrome storage for settings | 100% reusable |
+
+---
+
+## **NEW DEPENDENCIES REQUIRED**
+
+| Dependency | Purpose | Where | Size |
+|-----------|---------|-------|------|
+| **Prism C# Plugin** | Syntax highlighting for C# code | `/lib/prism/prism-csharp.js` | ~5KB |
+| **NUnit/MSTest Template Knowledge** | C# testing framework conventions | In prompts.js (no external dep) | N/A |
+
+---
+
+## **STEP-BY-STEP IMPLEMENTATION PLAN**
+
+### **Step 1: Add C# Prompt Templates** (5 min)
+- [ ] Open prompts.js
+- [ ] Add `SELENIUM_CSHARP_PAGE_ONLY` prompt (copy Java template, adapt syntax)
+- [ ] Add `SELENIUM_CSHARP_WITH_NUNIT` prompt (copy Cucumber+Steps template, adapt)
+- [ ] Update `CODE_GENERATOR_TYPES` enum to include new C# types
+
+**Example prompt template structure**:
+```javascript
+SELENIUM_CSHARP_PAGE_ONLY: `
+  Instructions:
+  - Generate ONLY a Selenium C# Page Object Class (no test code).
+  - Use Selenium 4.x compatible imports (OpenQA.Selenium).
+  - Add XML documentation comments (///).
+  - Use C# async/await patterns where applicable.
+  - Use meaningful method names following PascalCase convention.
+  - Do NOT include explanations or test code.
+
+  Context:
+  DOM:
+  \`\`\`html
+  \${domContent}
+  \`\`\`
+
+  Example:
+  \`\`\`csharp
+  using OpenQA.Selenium;
+  using OpenQA.Selenium.Support.UI;
+
+  /// <summary>
+  /// Page Object for Login Page
+  /// </summary>
+  public class LoginPage {
+      // Add methods as per the DOM
+  }
+  \`\`\`
+
+  Persona:
+  - Audience: C# automation engineers building maintainable Page Object Models.
+
+  Output Format:
+  - A single C# class inside a \`\`\`csharp\`\`\` block.
+
+  Tone:
+  - Clean, maintainable, enterprise-ready.
+`
+```
+
+### **Step 2: Implement C# Detection Logic** (2 min)
+- [ ] Open chat.js
+- [ ] Uncomment/implement `isCSharpSelenium()` method (it's already stubbed!)
+- [ ] Update `getPromptKeys()` method to handle C#/Selenium combinations
+
+### **Step 3: Add Syntax Highlighting Support** (3 min)
+- [ ] Option A (CDN): Update panel.html to include Prism C#:
+  ```html
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/csharp.min.js"></script>
+  ```
+- [ ] Option B (Local): Download `prism-csharp.js` to prism and reference it
+- [ ] Add language mapping in chat.js languageMap object
+
+### **Step 4: (Optional) Fix UI Checkbox Names** (5 min)
+- [ ] Rename `javaGenerationMode` to `generationMode` in panel.html
+- [ ] Update selector in chat.js
+- [ ] This makes the code more generic and maintainable for future languages
+
+### **Step 5: Test End-to-End** (10 min)
+- [ ] Select "C#" + "Selenium" in Settings
+- [ ] Select generation modes (Feature File / Page Class)
+- [ ] Inspect DOM on a sample webpage
+- [ ] Click "Generate"
+- [ ] Verify:
+  - [ ] Correct prompts are selected
+  - [ ] C# code is generated correctly
+  - [ ] Syntax highlighting works
+  - [ ] Copy button works
+  - [ ] Token counts display
+
+---
+
+## **ARCHITECTURE DIAGRAM**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    EXTENSION UI (panel.html)                 │
+│  ┌─────────────────┐  ┌─────────────────┐                   │
+│  │ Language: java/ │  │ Engine: selenium│                   │
+│  │ csharp/py/ts    │  │ playwright/...  │                   │
+│  └────────┬────────┘  └────────┬────────┘                   │
+└───────────┼─────────────────────┼─────────────────────────────┘
+            │                     │
+            └──────────┬──────────┘
+                       │
+        ┌──────────────▼─────────────────┐
+        │  chat.js: getPromptKeys()      │
+        │  (Routes to correct prompts)   │
+        │  - isJavaSelenium()            │
+        │  - isCSharpSelenium()  ◄─NEW   │
+        │  - isTypeScriptPlaywright()    │
+        └──────────────┬─────────────────┘
+                       │
+        ┌──────────────▼─────────────────────────┐
+        │   prompts.js: DEFAULT_PROMPTS          │
+        │   ┌────────────────────────────────┐   │
+        │   │ SELENIUM_JAVA_PAGE_ONLY        │   │
+        │   │ SELENIUM_CSHARP_PAGE_ONLY ◄─NEW│   │
+        │   │ SELENIUM_CSHARP_WITH_NUNIT ◄─NEW
+        │   │ CUCUMBER_ONLY                  │   │
+        │   │ PLAYWRIGHT_TYPESCRIPT_POM      │   │
+        │   │ ...                            │   │
+        │   └────────────────────────────────┘   │
+        └──────────────┬──────────────────────────┘
+                       │
+        ┌──────────────▼──────────────────────┐
+        │  LLM API (Groq/OpenAI/Testleaf)    │
+        │  (Generates code from prompt)      │
+        └──────────────┬──────────────────────┘
+                       │
+        ┌──────────────▼──────────────────────┐
+        │  chat.js: parseMarkdown()          │
+        │  (Formats with Prism highlighting)  │
+        │  - prism-typescript.js             │
+        │  - prism-gherkin-min.js            │
+        │  - prism-csharp.js ◄─NEW           │
+        └──────────────┬──────────────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────────┐
+        │  Displayed in Chat Panel          │
+        │  (Syntax highlighted code)        │
+        └──────────────────────────────────┘
+```
+
+---
+
+## **KEY CONSIDERATIONS**
+
+1. **Checkbox Names**: Currently hardcoded as `javaGenerationMode` but works for all languages. Good QA test to fix this during implementation.
+
+2. **Prompt Quality**: C# prompts should follow .NET conventions:
+   - Use `OpenQA.Selenium` namespace (not `Selenium`)
+   - Use `WebDriverWait` with `TimeSpan` (not Java's `Duration`)
+   - Consider NUnit vs MSTest (NUnit is more Cucumber-friendly)
+   - XML documentation (`///`) instead of JavaDoc
+
+3. **Syntax Highlighting**: Prism includes C# out-of-the-box or via CDN - no custom work needed beyond including the library.
+
+4. **Testing Frameworks**: For C#, consider:
+   - **NUnit** (BDD-friendly, Cucumber-like, recommended)
+   - **MSTest** (Microsoft standard)
+   - **xUnit** (modern alternative)
+
+5. **Language Mapping**: Already has `'cs': 'csharp'` mapping in chat.js, so add full coverage.
+
+---
+
+This implementation is **~15-20 minutes of work** with most of the infrastructure already in place for supporting new languages!
+
+User: Implement Selenium-C# support in the existing browser extension that currently generates test scripts for Selenium-Java and Playwright-TypeScript. Review and update all required files including language selection logic, script generation templates, UI options, configurations, dependencies, and code generation modules. Reuse the existing Selenium-Java implementation wherever possible. Perform the implementation step by step, explain each change, identify the files being updated, and wait for my approval before proceeding to the next step.
+
+GitHub Copilot: I'll implement Selenium-C# support step-by-step with clear explanations and approval gates. Let me first create a structured implementation plan, then we'll execute each step with your approval.
+
+## **IMPLEMENTATION PLAN - SELENIUM-C# SUPPORT**
+
+Based on my analysis, here's the breakdown:
+
+### **Phase 1: Core Generation Logic** (3 steps)
+1. **Step 1**: Add C# Prompt Templates to prompts.js
+2. **Step 2**: Implement C# Detection & Routing Logic in chat.js
+3. **Step 3**: Update Syntax Highlighting for C#
+
+### **Phase 2: UI & Configuration** (2 steps)
+4. **Step 4**: Refactor Checkbox Names (Generic Generation Mode)
+5. **Step 5**: Add Prism C# Language Support
+
+### **Phase 3: Testing & Validation**
+6. **Step 6**: End-to-end testing
+
+---
+
+## **STEP 1: ADD C# PROMPT TEMPLATES**
+
+### **What we're doing:**
+Adding two new prompt templates for Selenium-C# code generation:
+- `SELENIUM_CSHARP_PAGE_ONLY` - Page Object class only
+- `SELENIUM_CSHARP_WITH_NUNIT` - POM + NUnit test class combined
+
+### **Files being updated:**
+- **prompts.js** - Add prompts to `DEFAULT_PROMPTS` object and update enum
+
+### **Changes:**
+1. Insert 2 new C# prompts after the existing Selenium Java and Cucumber prompts
+2. Update `CODE_GENERATOR_TYPES` enum to include the new C# types
+3. Reuse the Java template structure, adapt syntax for C#
+
+### **Key C# Specifics:**
+- Use `OpenQA.Selenium` namespace (standard .NET convention)
+- Use `WebDriverWait` with `TimeSpan` instead of Java's `Duration`
+- XML documentation comments (`///`) instead of JavaDoc
+- NUnit framework conventions (`[TestFixture]`, `[Test]`, `[SetUp]`, `[TearDown]`)
+- PascalCase method names (C# convention)
+- `async/await` patterns
+
+### **Preview of changes:**
+
+**New prompt 1 - Page Object only:**
+```csharp
+// Using: OpenQA.Selenium, WebDriverWait, TimeSpan
+// XML docs, async methods, PascalCase naming
+// NO test code - just POM class
+```
+
+**New prompt 2 - Page Object + NUnit:**
+```csharp
+// Both POM class AND NUnit test class
+// [TestFixture], [Test] attributes
+// SetUp/TearDown for WebDriver management
+// Realistic test scenarios
+```
+
+### **Questions before proceeding:**
+1. Should I use **NUnit** or **MSTest** for the test class framework?
+   - *Recommendation: NUnit* (more Cucumber-friendly, open-source, similar to Java's TestNG)
+2. Should test classes include realistic test data (South India names, addresses)?
+   - *Recommendation: Yes* (consistent with current Java/TypeScript patterns)
+
+**Ready to proceed with Step 1? Any adjustments to the approach?**
+
+---
+
+**Once you approve Step 1**, I will:
+1. Add the `SELENIUM_CSHARP_PAGE_ONLY` prompt
+2. Add the `SELENIUM_CSHARP_WITH_NUNIT` prompt
+3. Update the `CODE_GENERATOR_TYPES` enum
+4. Show you the exact code changes
+5. Verify the file updates
+
+Please confirm if you want me to proceed with **Step 1** using NUnit and including realistic test data.
+
+User: proceed with NUnit
+
+GitHub Copilot: Perfect! Proceeding with **Step 1: Add C# Prompt Templates using NUnit**. 
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/prompts.js#1-1), lines 1 to 100
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/prompts.js#400-400), lines 400 to 450
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/prompts.js#450-450), lines 450 to 459
+
+Searched for text `PLAYWRIGHT_TYPESCRIPT_POM:` (`**/src/scripts/prompts.js`), 2 results
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/prompts.js#175-175), lines 175 to 193
+
+Now I'll add the two C# prompt templates. I'm inserting them after the Cucumber+Java template and before the Playwright section. 
+
+Replacing 14 lines with 202 lines in [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/prompts.js)
+
+
+```
+
+```
+Now I'll update the `CODE_GENERATOR_TYPES` enum to include the new C# types: 
+
+Replacing 8 lines with 10 lines in [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/prompts.js)
+
+
+```
+
+```
+✅ **STEP 1 COMPLETE: C# Prompt Templates Added**
+
+### **Changes Made:**
+
+**File: prompts.js**
+
+1. **Added `SELENIUM_CSHARP_PAGE_ONLY` prompt** (~50 lines)
+   - Generates C# Page Object class only (no test code)
+   - Uses `OpenQA.Selenium` namespace
+   - Includes XML documentation comments (`///`)
+   - Constructor accepts IWebDriver
+   - WebDriverWait with TimeSpan
+   - PascalCase method naming (C# convention)
+
+2. **Added `SELENIUM_CSHARP_WITH_NUNIT` prompt** (~120 lines)
+   - Generates both:
+     - **Page Object Class**: Properties with By locators, WebDriver management
+     - **NUnit Test Class**: [TestFixture], [Test], [SetUp], [TearDown] attributes
+   - Includes realistic South India test data (e.g., "Rajesh Kumar")
+   - Shows proper NUnit assertions (`Assert.That()`)
+   - Demonstrates async patterns and WebDriverWait usage
+
+3. **Updated `CODE_GENERATOR_TYPES` enum**
+   - Added `SELENIUM_CSHARP_PAGE_ONLY: 'Selenium-CSharp-Page-Only'`
+   - Added `SELENIUM_CSHARP_WITH_NUNIT: 'Selenium-CSharp-With-NUnit'`
+
+### **Key C# Features in Prompts:**
+- ✅ `using OpenQA.Selenium;` (standard .NET convention)
+- ✅ XML doc comments (`///`) instead of JavaDoc
+- ✅ NUnit attributes ([TestFixture], [Test], [SetUp], [TearDown])
+- ✅ `IWebDriver` interface and dependency injection
+- ✅ `WebDriverWait` with `TimeSpan.FromSeconds(10)`
+- ✅ `By` locators as properties
+- ✅ PascalCase method names (C# standard)
+- ✅ NUnit assertions (`Assert.That()`)
+
+---
+
+## **READY FOR STEP 2: C# Detection & Routing Logic**
+
+**What we'll do:**
+- Implement `isCSharpSelenium()` method in chat.js (already stubbed)
+- Update `getPromptKeys()` method to route C# selections to correct prompts
+- Add C#/Selenium handling for both "Page only" and "Both" generation modes
+
+**Proceed with Step 2?** ✓
+
+Made changes.
+
+User: proceed
+
+GitHub Copilot: Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/chat.js#520-520), lines 520 to 600
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/chat.js#600-600), lines 600 to 630
+
+Perfect! I can see `isCSharpSelenium()` is already defined. Now I need to update the `getPromptKeys()` method to add C# routing logic. Let me update it: 
+
+Replacing 41 lines with 47 lines in [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/chat.js)
+
+
+```
+
+```
+✅ **STEP 2 COMPLETE: C# Detection & Routing Logic Implemented**
+
+### **Changes Made:**
+
+**File: chat.js**
+
+Updated `getPromptKeys()` method with C# routing in three locations:
+
+1. **Default fallback (no mode selected)**
+   - Added check: `this.isCSharpSelenium(lang, eng)` → routes to `SELENIUM_CSHARP_PAGE_ONLY`
+
+2. **Both Feature + Page selected**
+   - Added `else if (this.isCSharpSelenium(lang, eng))` → routes to `SELENIUM_CSHARP_WITH_NUNIT`
+   - This generates both POM class AND NUnit test class
+
+3. **Page Object only selected**
+   - Added `else if (this.isCSharpSelenium(lang, eng))` → routes to `SELENIUM_CSHARP_PAGE_ONLY`
+   - This generates POM class only
+
+### **How It Works Now:**
+
+| Language | Engine | Mode | Prompt Used |
+|----------|--------|------|-------------|
+| C# | Selenium | Page Only | `SELENIUM_CSHARP_PAGE_ONLY` |
+| C# | Selenium | Both | `SELENIUM_CSHARP_WITH_NUNIT` |
+| C# | Selenium | Feature Only | `CUCUMBER_ONLY` (not applicable for C#) |
+
+### **Helper Method Status:**
+✅ `isCSharpSelenium()` method already properly implemented in chat.js:
+```javascript
+isCSharpSelenium(language, engine) {
+    return language === 'csharp' && engine === 'selenium';
+}
+```
+
+---
+
+## **READY FOR STEP 3: Add Syntax Highlighting for C#**
+
+**What we'll do:**
+- Add Prism C# language support to panel.html (via CDN or local file)
+- Verify language mapping in chat.js for C# highlighting
+
+**Proceed with Step 3?** ✓
+
+Made changes.
+
+User: proceed
+
+GitHub Copilot: Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/panel.html#1-1), lines 1 to 20
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/chat.js#160-160), lines 160 to 180
+
+Searched for text `languageMap = {` (`**/src/scripts/chat.js`), 2 results
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/chat.js#155-155), lines 155 to 175
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/chat.js#195-195), lines 195 to 215
+
+Now I'll update the language mappings and add Prism C# support: 
+
+Multi-Replace String in Files
+
+Replacing 10 lines with 13 lines in [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/chat.js), [](file:///e%3A/GenAI/Week3-Day1/ai-extension/panel.html)
+
+
+```
+
+```
+
+```
+
+```
+Let me verify the syntax highlighting setup. I want to make sure we're using Prism consistently (not mixing with Highlight.js): 
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/panel.html#1-1), lines 1 to 15
+
+Let me fix this to use Prism consistently (not mix libraries): 
+
+Replacing 5 lines with 5 lines in [](file:///e%3A/GenAI/Week3-Day1/ai-extension/panel.html)
+
+
+```
+
+```
+Let me verify both files were updated correctly:  
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/panel.html#1-1), lines 1 to 15
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/chat.js#155-155), lines 155 to 175
+
+Read [](file:///e%3A/GenAI/Week3-Day1/ai-extension/src/scripts/chat.js#195-195), lines 195 to 215
+
+✅ **STEP 3 COMPLETE: Syntax Highlighting for C# Added**
+
+### **Changes Made:**
+
+**File 1: panel.html**
+- Added Prism C# language support: 
+  ```html
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+  ```
+- Using jsDelivr CDN (consistent with existing Prism setup, v1.29.0 - stable version)
+- Loads after core Prism library (`prism.js`) and other language packs
+- No external library conflicts
+
+**File 2: chat.js**
+- Updated first `languageMap` in markdown rendering:
+  - Added: `'cs': 'csharp'`
+  - Added: `'csharp': 'csharp'` (for explicit mapping)
+- This ensures code blocks marked with ```cs or ```csharp get proper highlighting
+
+**Language Mapping Status:**
+✅ Both language maps now support C#:
+- First map (marked.setOptions): `'cs': 'csharp'`, `'csharp': 'csharp'`
+- Second map (custom renderer): Already had `'cs': 'csharp'`
+
+### **How C# Syntax Highlighting Works:**
+1. User generates C# code via LLM
+2. Code arrives in markdown with ```csharp block
+3. First language map normalizes `cs` → `csharp`
+4. Prism library (with C# component) highlights the code
+5. Display shows properly syntax-highlighted C# with Tomorrow theme colors
+
+---
+
+## **READY FOR STEP 4: Refactor Checkbox Names (Optional UI Improvement)**
+
+**What we'll do:**
+- Rename hardcoded `javaGenerationMode` to generic `generationMode` in [panel.html](panel.html#L40-L50)
+- Update selector in [chat.js](src/scripts/chat.js#L528) to use new name
+- **Note**: This is optional but makes code more maintainable for future languages
+
+**Benefits:**
+- More semantic naming (not Java-specific)
+- Cleaner code for future language additions
+- Better UI clarity
+
+**Proceed with Step 4 (optional UI refactor)?** ✓
+
+Or skip to **Step 5: End-to-End Testing**?or ```csharp get proper highlighting
+
+**Language Mapping Status:**
+✅ Both language maps now support C#:
+- First map (marked.setOptions): `'cs': 'csharp'`, `'csharp': 'csharp'`
+- Second map (custom renderer): Already had `'cs': 'csharp'`
+
+### **How C# Syntax Highlighting Works:**
+1. User generates C# code via LLM
+2. Code arrives in markdown with ```csharp block
+3. First language map normalizes `cs` → `csharp`
+4. Prism library (with C# component) highlights the code
+5. Display shows properly syntax-highlighted C# with Tomorrow theme colors
+
+---
+
+## **READY FOR STEP 4: Refactor Checkbox Names (Optional UI Improvement)**
+
+**What we'll do:**
+- Rename hardcoded `javaGenerationMode` to generic `generationMode` in [panel.html](panel.html#L40-L50)
+- Update selector in [chat.js](src/scripts/chat.js#L528) to use new name
+- **Note**: This is optional but makes code more maintainable for future languages
+
+**Benefits:**
+- More semantic naming (not Java-specific)
+- Cleaner code for future language additions
+- Better UI clarity
+
+**Proceed with Step 4 (optional UI refactor)?** ✓
+
+Or skip to **Step 5: End-to-End Testing**?
+
+Made changes.
+
+User: skip
+
+GitHub Copilot: Perfect! Skipping Step 4 (optional refactor). Moving to **Step 5: End-to-End Testing & Validation**.
+
+---
+
+## **STEP 5: END-TO-END TESTING & VALIDATION**
+
+### **What we're testing:**
+1. ✅ C# prompt templates exist and are properly formatted
+2. ✅ C# detection logic routes to correct prompts
+3. ✅ Syntax highlighting works for C#
+4. ✅ UI flow allows C# selection
+5. ✅ Code generation works end-to-end
+
+### **Pre-Test Checklist:**
+
+Let me verify all changes are in place:   
+
+Searched for text `SELENIUM_CSHARP_PAGE_ONLY` (`**/src/scripts/prompts.js`), 2 results
+
+Searched for text `SELENIUM_CSHARP_WITH_NUNIT` (`**/src/scripts/prompts.js`), 2 results
+
+Searched for text `isCSharpSelenium` (`**/src/scripts/chat.js`), 4 results
+
+✅ All changes verified! Now let me create a comprehensive **Testing Checklist & Validation Guide**:
+
+---
+
+## **TESTING VALIDATION CHECKLIST**
+
+### **1. CODE GENERATION LOGIC ✅**
+- [x] `SELENIUM_CSHARP_PAGE_ONLY` prompt exists in prompts.js (line 193)
+- [x] `SELENIUM_CSHARP_WITH_NUNIT` prompt exists in prompts.js (line 242)
+- [x] Both prompts in `CODE_GENERATOR_TYPES` enum (lines 641-642)
+- [x] `isCSharpSelenium()` method defined in chat.js (line 620)
+- [x] C# routing in `getPromptKeys()` - 3 locations updated (lines 568, 581, 601)
+
+### **2. SYNTAX HIGHLIGHTING ✅**
+- [x] Prism C# library loaded in panel.html
+- [x] Language mapping includes 'cs' → 'csharp'
+- [x] Both code rendering paths support C#
+
+### **3. UI CONFIGURATION ✅**
+- [x] Language dropdown in panel.html has `<option value="csharp">C#</option>`
+- [x] Browser dropdown has Selenium option selected by default
+- [x] Generation mode checkboxes available (Feature File / Page Class)
+
+---
+
+## **MANUAL TESTING STEPS**
+
+To test the implementation in your browser extension, follow these steps:
+
+### **Test Case 1: Page Object Only (C#)**
+1. Open the extension panel
+2. Go to **Settings** tab
+3. Select:
+   - **Language**: C#
+   - **Browser Engine**: Selenium
+4. Go back to **Code Generator** tab
+5. **Uncheck** "Feature File", **keep** "Page Class" checked
+6. Inspect some DOM on a webpage
+7. Click **Generate**
+8. **Expected Result**: Generates only C# Page Object class using `SELENIUM_CSHARP_PAGE_ONLY` prompt
+
+### **Test Case 2: Page Object + NUnit Test (C#)**
+1. Settings:
+   - **Language**: C#
+   - **Browser Engine**: Selenium
+2. Code Generator:
+   - **Check** both "Feature File" AND "Page Class"
+3. Inspect DOM + Click Generate
+4. **Expected Result**: Generates both C# POM class AND NUnit test class using `SELENIUM_CSHARP_WITH_NUNIT` prompt
+
+### **Test Case 3: Feature File Only (C#)**
+1. Settings: C# + Selenium
+2. Code Generator: **Check** "Feature File" only
+3. Inspect DOM + Generate
+4. **Expected Result**: Falls back to `CUCUMBER_ONLY` (since NUnit doesn't have standalone feature files)
+
+### **Test Case 4: Syntax Highlighting**
+1. Generate any C# code (Test Case 1 or 2)
+2. Look at the generated code in the chat panel
+3. **Expected Result**: 
+   - Code is highlighted with colors (keywords, strings, etc.)
+   - Tomorrow theme colors applied
+   - Keywords like `using`, `public`, `class`, `async` are styled
+
+### **Test Case 5: Verify Prompt Content**
+1. Generate C# Page Object code
+2. Inspect the generated code should contain:
+   - `using OpenQA.Selenium;` imports
+   - XML doc comments (`///`)
+   - NUnit attributes if Test class: `[TestFixture]`, `[Test]`, `[SetUp]`, `[TearDown]`
+   - `IWebDriver` interface usage
+   - `WebDriverWait` with `TimeSpan`
+   - PascalCase method names
+
+---
+
+## **VALIDATION QUESTIONS**
+
+After running the tests above, verify:
+
+1. **✓ Do C# prompts generate valid C# code?**
+   - Check for proper syntax (no Java/TypeScript mixed in)
+   - Verify `using` statements are C# specific
+   - Check XML doc format (`///`)
+
+2. **✓ Does routing logic work correctly?**
+   - "Page Only" → generates ONLY Page Object (no test code)
+   - "Both" → generates Page Object + NUnit test class
+   - Feature → falls back to Gherkin (appropriate)
+
+3. **✓ Is syntax highlighting working?**
+   - C# keywords properly colored
+   - No console errors for C# highlighting
+
+4. **✓ Does token tracking work?**
+   - Copy button works
+   - Metadata (input/output tokens) displays correctly
+   - Reset button clears chat properly
+
+---
+
+## **TESTING COMPLETE? ✓**
+
+Once you've run these tests and validated the behavior, we can proceed to:
+
+### **Step 6: Documentation & Summary** (Optional)
+- Create a quick reference for C# support features
+- List any edge cases discovered
+- Document best practices
+
+---
+
+**Please run the test cases and let me know:**
+1. ✅ Did the C# code generation work as expected?
+2. ✅ Did the syntax highlighting display correctly?
+3. ✅ Any issues or unexpected behavior?
+4. ✅ Ready to proceed to Step 6 (Documentation)?
+
+Or would you like me to verify something specific in the code first?
